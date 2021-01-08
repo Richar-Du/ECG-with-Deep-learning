@@ -1,12 +1,4 @@
----
-title: 基于深度学习的ECG分类(一)——项目介绍
-author: 都一凡
-date: 2020-11-30 08:17:00 +0800
-categories: [blog]
-tags: [Deep learning,ECG]
-image: D:\Myblog\Richar-Du.github.io\assets\img\sample\avatar.jpg
-pin: true
----
+## 基于深度学习的ECG分类(一)——项目介绍
 
 ### 摘要
 

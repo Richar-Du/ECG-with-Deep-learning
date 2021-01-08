@@ -1,13 +1,3 @@
----
-title: 使用Docker部署模型
-author: 都一凡
-date: 2020-11-18 16:12:00 +0800
-categories: [blog]
-tags: [Deep learning]
-image: D:\Myblog\Richar-Du.github.io\assets\img\sample\avatar.jpg
-pin: true
----
-
 模型训练完毕后，下一步就是部署。一个常用的情景就是在服务器上提供一个 API，用户如果有某个需求，就向服务器对应的 API 发送特定格式的请求，服务器收到请求数据后通过模型进行计算，并返回结果。这属于在线部署模型，虽然我们最终的目标是边缘计算，但是在线部署是“端-管-云”架构的重要体现，之前的项目中只用过边缘计算的我也想尝试一下这种方式。
 
 在工业界常用的部署方式就是借助Docker，服务器上已经安装了Docker，通过运行以下命令来获取最新的TensorFlow Serving Docker映像，这里面有tensorflow自带的一个小模型。注意这个拉取下来后不是直接放在当前目录的，而是docker默认存储的路径：

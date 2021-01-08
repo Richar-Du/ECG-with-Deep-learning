@@ -1,14 +1,6 @@
----
-title: 使用Tensorflow Lite将模型部署到树莓派
-author: 都一凡
-date: 2020-11-21 09:49:00 +0800
-categories: [blog]
-tags: [Deep learning]
-image: D:\Myblog\Richar-Du.github.io\assets\img\sample\avatar.jpg
-pin: true
----
+## 基于深度学习的ECG分类(六)——使用Tensorflow Lite将模型部署到树莓派
 
-在部署之前我们首先要明确，Tensorflow模型实质上就是一种数据结构，其内部有自身的逻辑运算顺序，把一个符合输入格式的数据送到模型当中去，模型就会按照它自身的数据结构和逻辑运算计算出一个结果，反馈给我们。因此我们只需要想办法把这个数据结构存储到边缘设备当中，就能实现所谓的“边缘计算”。而Tensorflow Lite就是在边缘设备中执行Tensorflow模型的工具。
+部署之前我们首先要明确，Tensorflow模型实质上就是一种数据结构，其内部有自身的逻辑运算顺序，把一个符合输入格式的数据送到模型当中去，模型就会按照它自身的数据结构和逻辑运算计算出一个结果，反馈给我们。因此我们只需要想办法把这个数据结构存储到边缘设备当中，就能实现所谓的“边缘计算”。而Tensorflow Lite就是在边缘设备中执行Tensorflow模型的工具。
 
 > 注意Tensorflow Lite只是一个模型的执行工具，而不是一个模型训练工具。
 

@@ -1,13 +1,3 @@
----
-title: 第一次跑深度学习
-author: 都一凡
-date: 2020-11-13 09:51:00 +0800
-categories: [blog]
-tags: [ECG,Deep learning]
-image: D:\Myblog\Richar-Du.github.io\assets\img\sample\avatar.jpg
-pin: true
----
-
 记录了第一次跑深度学习时遇到的一些问题，并不是完整的流程，而是初学者容易犯的一些错误，比较简单基础，但是以后还会再用到。
 
 - MIT-BIH心电数据库极度地不平衡，而不管是深度学习还是机器学习，他们能够较好地拟合数据的一个假设就是数据集是平衡分布的。因此为了更准确地评估深度学习模型的表现，采取分层抽样的方式，保证训练集和测试集的数据分布是一样的：
