@@ -20,3 +20,9 @@ def CNN_LSTM():
         tf.keras.layers.Dense(units=10, activation=tf.nn.relu),
         tf.keras.layers.Dense(units=7, activation=tf.nn.softmax)
     ])
+
+def SEBlock(inputs, reduction=16, if_train=True):
+    x = tf.keras.layers.GlobalAveragePooling1D()(inputs)
+    x = tf.keras.layers.Dense(int(x.shape[-1]) // reduction, use_bias=False, activation=tf.keras.activations.relu, trainable=if_train)(x)
+    x = tf.keras.layers.Dense(int(inputs.shape[-1]), use_bias=False, activation=tf.keras.activations.hard_sigmoid, trainable=if_train)(x)
+    return tf.keras.layers.Multiply()([inputs, x])

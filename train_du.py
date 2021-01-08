@@ -21,6 +21,8 @@ from model.CNN import CNN1d
 from model.CNN import CNN
 from model.CNN import SeqCNN
 from model.CNNLSTM import CNN_LSTM
+from model.SE_Net import SENet
+from model.SENetLSTM import SENet_LSTM
 #=================================================== 读取数据================================================
 np.random.seed(7)
 choose_index=np.random.randint(1,100,100)
@@ -30,11 +32,11 @@ Y_list=['/home/group5/new_new_data/Y_eu_MLIII.csv','/home/group5/new_new_data/Y_
 X=np.loadtxt('data/X_MIT.csv',delimiter=',',skiprows=1).astype('float32')#[choose_index]
 Y=np.loadtxt('data/Y_MIT.csv',dtype="str",delimiter=',',skiprows=1)#[choose_index]
 #合并数据集
-# print("begin concatenating...")
-# for database in X_list:
-#     X=np.concatenate((X,(np.loadtxt(database,dtype="str",delimiter=',',skiprows=1).astype(np.float))))
-# for database in Y_list:
-#     Y=np.concatenate((Y,(np.loadtxt(database,dtype="str",delimiter=',',skiprows=1))))
+print("begin concatenating...")
+for database in X_list:
+    X=np.concatenate((X,(np.loadtxt(database,dtype="str",delimiter=',',skiprows=1).astype(np.float))))
+for database in Y_list:
+    Y=np.concatenate((Y,(np.loadtxt(database,dtype="str",delimiter=',',skiprows=1))))
 
 AAMI=['N','L','R','V','A','|','B']
 # N:Normal
@@ -81,49 +83,49 @@ def get_batch(X,y,batch_size):
     index = np.random.randint(0, len(y), batch_size)
     return X[index, :], y[index]
 #===================================================模型训练==================================================
-# 定义超参数，后面可能需要调参
+# 定义超参数
 num_epochs = 60
 batch_size = 32
 learning_rate = 0.001
 #=======================================一维 CNN模型====================================================
 # =======================================直接调用的方式===================================
-# input_ecg=tf.keras.layers.Input(shape=(3600,1))
-# label_ecg=CNN1d(input_ecg)
-# print("begin 1dCNN")
-# model=Model(input_ecg,label_ecg)
-# print('model summary:',model.summary())
-# # 设置优化器
-# optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate,beta_1=0.9,beta_2=0.999,name='Adam')
-# loss=tf.keras.losses.categorical_crossentropy
-# metrics=['accuracy']
-# # 初始化tensorboard
-# # 注意windows系统和linux系统下文件路径的问题
-# if platform.system()=='Windows':
-#     log_dir="tensorboard\\fit\\CNN" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-# elif platform.system()=='Linux':
-#     log_dir="tensorboard/fit/CNN" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-# summary_writer=tf.summary.create_file_writer(log_dir)   # 实例化一个记录器
-# tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
-# # 配置训练过程
-# print('begin compile CNN')
-# model.compile(optimizer=optimizer,loss=loss,metrics=metrics)
-# # 训练模型
-# print("begin fit CNN")
-# savedModule=model.fit(X_train,y_train,epochs=num_epochs,batch_size=batch_size,validation_split=0.2,callbacks=[tensorboard_callback])
-# plt.plot(savedModule.epoch,savedModule.history['loss'],color='blue',label='train loss')
-# plt.plot(savedModule.epoch,savedModule.history['val_loss'],color="red",label='test loss')
-# plt.legend()
-# plt.show()
-# # 评估训练效果
-# print(model.evaluate(X_test,y_test))
-# predict=model.predict(X_test)       # 输出的不是一个类别，而是样本属于每一个类别的概率
-# predict=[np.argmax(predict[i]) for i in range(len(predict))]
-# print('confusion matrix:',tf.math.confusion_matrix(y_test,predict))
-# # 保存模型
-# if platform.system()=='Windows':
-#     tf.saved_model.save(model, "save\\CNN")
-# elif platform.system()=='Linux':
-#     tf.saved_model.save(model,"save/CNN")
+input_ecg=tf.keras.layers.Input(shape=(3600,1))
+label_ecg=SENet_LSTM(input_ecg)
+print("begin 1dCNN")
+model=Model(input_ecg,label_ecg)
+print('model summary:',model.summary())
+# 设置优化器
+optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate,beta_1=0.9,beta_2=0.999,name='Adam')
+loss=tf.keras.losses.categorical_crossentropy
+metrics=['accuracy']
+# 初始化tensorboard
+# 注意windows系统和linux系统下文件路径的问题
+if platform.system()=='Windows':
+    log_dir="tensorboard\\fit\\CNN" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+elif platform.system()=='Linux':
+    log_dir="tensorboard/fit/CNN" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+summary_writer=tf.summary.create_file_writer(log_dir)   # 实例化一个记录器
+tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+# 配置训练过程
+print('begin compile CNN')
+model.compile(optimizer=optimizer,loss=loss,metrics=metrics)
+# 训练模型
+print("begin fit CNN")
+savedModule=model.fit(X_train,y_train,epochs=num_epochs,batch_size=batch_size,validation_split=0.2,callbacks=[tensorboard_callback])
+plt.plot(savedModule.epoch,savedModule.history['loss'],color='blue',label='train loss')
+plt.plot(savedModule.epoch,savedModule.history['val_loss'],color="red",label='test loss')
+plt.legend()
+plt.show()
+# 评估训练效果
+print(model.evaluate(X_test,y_test))
+predict=model.predict(X_test)       # 输出的不是一个类别，而是样本属于每一个类别的概率
+predict=[np.argmax(predict[i]) for i in range(len(predict))]
+print('confusion matrix:',tf.math.confusion_matrix(y_test,predict))
+# 保存模型
+if platform.system()=='Windows':
+    tf.saved_model.save(model, "save\\CNN")
+elif platform.system()=='Linux':
+    tf.saved_model.save(model,"save/CNN")
 # ======================================================自定义类的方式==============================
 # model=CNN()
 # optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate,beta_1=0.9,beta_2=0.999,name='Adam')
@@ -153,58 +155,58 @@ learning_rate = 0.001
 # elif platform.system()=='Linux':
 #     tf.saved_model.save(model,"save/CNN")
 # ======================================================sequential的方式==============================
-model=CNN_LSTM()
-print("begin optimizer...")
-optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate,beta_1=0.9,beta_2=0.999,name='Adam')
-print("begin reduce_lr...")
-reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2,
-                              patience=5, min_lr=0.001)
-print("begin checkpoint...")
-checkpoint = tf.train.Checkpoint(SeqCNN_model=model,SeqCNN_optimizer=optimizer)
-if platform.system()=='Windows':
-    ModelSavedPath="save\\CNN"+ datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-elif platform.system()=='Linux':
-    ModelSavedPath="save/CNN"+ datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-checkpoint=tf.keras.callbacks.ModelCheckpoint(
-    ModelSavedPath, monitor='val_loss', verbose=0, save_best_only=True,
-    save_weights_only=False, mode='auto', save_freq='epoch', options=None, )
-print("begin compiling...")
-model.compile(optimizer=optimizer,loss='categorical_crossentropy',metrics=['accuracy'])
-if platform.system()=='Windows':
-    log_dir="tensorboard\\fit\\CNN"  + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-elif platform.system()=='Linux':
-    log_dir="tensorboard/fit/CNN"  + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-# summary_writer = tf.summary.create_file_writer(log_dir)
-tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
-print("begin fitting...")
-history=model.fit(x=X_train,
-          y=y_train,
-          epochs=num_epochs,
-          batch_size=batch_size,
-          validation_split=0.2,
-          callbacks=[tensorboard_callback,reduce_lr])
-# with summary_writer.as_default():  # 指定记录器
-#     tf.summary.scalar("loss", history.history['loss'], step=history.epoch)  # 将当前损失函数的值写入记录器
-print("history loss=",history.history['loss'])
-# 评估训练效果
-print(model.evaluate(X_test,y_test))
-predict=model.predict(X_test)       # 输出的不是一个类别，而是样本属于每一个类别的概率
-predict=[np.argmax(predict[i]) for i in range(len(predict))]
-print('confusion matrix:',tf.math.confusion_matrix(y_test,predict))
-plt.subplot(1,2,1) #要生成两行两列，这是第一个图plt.subplot('行','列','编号')
-plt.plot(history.epoch,history.history['loss'],color='b',label='train loss')
-plt.plot(history.epoch,history.history['val_loss'],color="red",label='validation loss')
-plt.legend()
-plt.subplot(1,2,2)
-plt.plot(history.epoch,history.history['accuracy'],color='b',label='train acc')
-plt.plot(history.epoch,history.history['val_accuracy'],color="red",label='validation acc')
-plt.legend()
-plt.title("loss and accuracy")
-if platform.system()=='Windows':
-    plt.savefig("figure\\" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")+'CNN1d.png')
-elif platform.system()=='Linux':
-    plt.savefig("figure/"+ datetime.datetime.now().strftime("%Y%m%d-%H%M%S")+'CNN1d.png')
-# plt.show()
+# model=SENet()
+# print("begin optimizer...")
+# optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate,beta_1=0.9,beta_2=0.999,name='Adam')
+# print("begin reduce_lr...")
+# reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2,
+#                               patience=5, min_lr=0.001)
+# print("begin checkpoint...")
+# checkpoint = tf.train.Checkpoint(SeqCNN_model=model,SeqCNN_optimizer=optimizer)
+# if platform.system()=='Windows':
+#     ModelSavedPath="save\\CNN"+ datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+# elif platform.system()=='Linux':
+#     ModelSavedPath="save/CNN"+ datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+# checkpoint=tf.keras.callbacks.ModelCheckpoint(
+#     ModelSavedPath, monitor='val_loss', verbose=0, save_best_only=True,
+#     save_weights_only=False, mode='auto', save_freq='epoch', options=None, )
+# print("begin compiling...")
+# model.compile(optimizer=optimizer,loss='categorical_crossentropy',metrics=['accuracy'])
+# if platform.system()=='Windows':
+#     log_dir="tensorboard\\fit\\CNN"  + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+# elif platform.system()=='Linux':
+#     log_dir="tensorboard/fit/CNN"  + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+# # summary_writer = tf.summary.create_file_writer(log_dir)
+# tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+# print("begin fitting...")
+# history=model.fit(x=X_train,
+#           y=y_train,
+#           epochs=num_epochs,
+#           batch_size=batch_size,
+#           validation_split=0.2,
+#           callbacks=[tensorboard_callback,reduce_lr])
+# # with summary_writer.as_default():  # 指定记录器
+# #     tf.summary.scalar("loss", history.history['loss'], step=history.epoch)  # 将当前损失函数的值写入记录器
+# print("history loss=",history.history['loss'])
+# # 评估训练效果
+# print(model.evaluate(X_test,y_test))
+# predict=model.predict(X_test)       # 输出的不是一个类别，而是样本属于每一个类别的概率
+# predict=[np.argmax(predict[i]) for i in range(len(predict))]
+# print('confusion matrix:',tf.math.confusion_matrix(y_test,predict))
+# plt.subplot(1,2,1) #要生成两行两列，这是第一个图plt.subplot('行','列','编号')
+# plt.plot(history.epoch,history.history['loss'],color='b',label='train loss')
+# plt.plot(history.epoch,history.history['val_loss'],color="red",label='validation loss')
+# plt.legend()
+# plt.subplot(1,2,2)
+# plt.plot(history.epoch,history.history['accuracy'],color='b',label='train acc')
+# plt.plot(history.epoch,history.history['val_accuracy'],color="red",label='validation acc')
+# plt.legend()
+# plt.title("loss and accuracy")
+# if platform.system()=='Windows':
+#     plt.savefig("figure\\" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")+'CNN1d.png')
+# elif platform.system()=='Linux':
+#     plt.savefig("figure/"+ datetime.datetime.now().strftime("%Y%m%d-%H%M%S")+'CNN1d.png')
+# # plt.show()
 # ==========================================================保存模型并转化成tensoflow lite格式的文件==========================================================
 # 使用checkpoint保存模型参数
 print("begin saving checkpoint...")
@@ -227,3 +229,5 @@ tflite_model = converter.convert()
 with open(tflite_path, 'wb') as f:
   f.write(tflite_model)
 f.close()
+
+
