@@ -2,11 +2,17 @@
 
 部署之前我们首先要明确，Tensorflow模型实质上就是一种数据结构，其内部有自身的逻辑运算顺序，把一个符合输入格式的数据送到模型当中去，模型就会按照它自身的数据结构和逻辑运算计算出一个结果，反馈给我们。因此我们只需要想办法把这个数据结构存储到边缘设备当中，就能实现所谓的“边缘计算”。而Tensorflow Lite就是在边缘设备中执行Tensorflow模型的工具。
 
+Tensorflow Lite部署过程主要分为：模型选择、模型转换以及模型部署三大步
+
+<img src='figure/tflite.png' height=100 width=550>
+
 > 注意Tensorflow Lite只是一个模型的执行工具，而不是一个模型训练工具。
 
 下面按照一整套流程介绍如何将Tensorflow模型部署到树莓派。
 
-- 转化模型：
+<img src='figure/pi.png' width=270 height=160>
+
+- 转换模型：
 
   Tensorflow Lite之所以能够在资源较小的嵌入式设备中高效运算模型，很大程度上是使用了一种特殊的数据结构去存储模型。因此在使用Tensorflow Lite之前，必须先将模型转化成Tensorflow Lite的格式。方式一共有两种：使用python API和命令行，此处我们用第一种，也是Tensorflow官方推荐的。
 
@@ -25,6 +31,8 @@ with open('model.tflite', 'wb') as f:
 - 采集ECG数据：
   
   我们利用AD8232模块以360HZ的采样频率采集10s ECG数据，然后再通过PCF85591模块将ECG模拟信号转换为ECG数字信号
+  <img src='figure/AD8232.png' width=150 height=150>
+  <img src='figure/PCF8591.png' width=150 height=180>
   
   在树莓派上，我们通过smbus包来控制I2C总线，获取ECG数据并进行识别，主要步骤如下：
   
@@ -34,6 +42,8 @@ with open('model.tflite', 'wb') as f:
   - 读取PCF8591传来的数据
   
 ```python
+import smbus
+
 # read the ECG data
 # The total amount of data is freq * duration
 def get_ecg(freq,duration):
@@ -104,5 +114,3 @@ ecg_signals = get_ecg(360,10)
   output_data = interpreter.get_tensor(output_details[0]['index'])
   print(output_data)
   ```
-
-
