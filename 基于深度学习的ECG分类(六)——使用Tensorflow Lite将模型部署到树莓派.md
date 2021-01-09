@@ -22,6 +22,37 @@ tflite_model = converter.convert()
 with open('model.tflite', 'wb') as f:
   f.write(tflite_model)
 ```
+- 采集ECG数据：
+  
+  我们利用AD8232模块以360HZ的采样频率采集10s ECG数据，然后再通过PCF85591模块将ECG模拟信号转换为ECG数字信号
+  
+  在树莓派上，我们通过smbus包来控制I2C总线，获取ECG数据并进行识别，主要步骤如下：
+  
+  - 打开树莓派的I2C总线
+  - 向PCF8591发送命令，选择输入口
+    - 因为PCF8591有四个输入口，所以我们要告诉PCF8591监听哪一个输入口
+  - 读取PCF8591传来的数据
+  
+```python
+# read the ECG data
+# The total amount of data is freq * duration
+def get_ecg(freq,duration):
+	ecgs = []
+	address = 0x48
+	A0 = 0x40
+	A1 = 0x41
+	A2 = 0x42
+	A3 = 0x43
+	bus = smbus.SMBus(1)
+	bus.write_byte(address,A2)
+	for i in range(int(duration*freq)):
+		value = bus.read_byte(address)
+		ecgs.append(value)
+		time.sleep(1.0/freq)
+	return ecgs
+  
+ecg_signals = get_ecg(360,10)
+```
 
 - 使用模型进行推断
 
@@ -64,11 +95,12 @@ with open('model.tflite', 'wb') as f:
   input_shape = input_details[0]['shape']
   input_data = np.array(np.random.random_sample(input_shape), dtype=np.float32)
   interpreter.set_tensor(input_details[0]['index'], input_data)
-
+  
+  # Tead the ECG data
+  interpreter.set_tensor(input_details[0]['index'],ecg_signals)
+  
+  # Predict
   interpreter.invoke()
-
-  # The function `get_tensor()` returns a copy of the tensor data.
-  # Use `tensor()` in order to get a pointer to the tensor.
   output_data = interpreter.get_tensor(output_details[0]['index'])
   print(output_data)
   ```
