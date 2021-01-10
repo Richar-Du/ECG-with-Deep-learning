@@ -79,7 +79,38 @@ PhysioNet提供了一个简单方便的网页版转换工具PhysioBank ATM（htt
 #### **使用WFDB读取数据**
 
 - WFDB是一个用于读取，写入和处理WFDB信号和注释的工具库；
+
 - WFDB 软件包的主要组成是WFDB库，用于信号处理和自动分析的WFDB应用程序，以及用于可视化、注释、波形数据交互式分析的软件WAVE。
+
+- 该软件包是用高度可移植的C语言编写的，可以在所有流行的平台上使用，包括GNU/Linux，MacOS/ X，MS-Windows，及Unix的所有版本。
+
+- 功能
+
+  + 对波形和注释进行快速显示 
+
+  - 可以快速访问记录的任意位置，提高效率并减少网络流量 
+
+  - 进行注释模式向前和向后搜索
+
+  - 可以进行图形化的注释编辑，使用标准的或是用户定义的注释方法 
+
+  - 变速叠加显示（如模拟触发式示波器持续性的显示） 
+  - 对用户选择的信号片段进行高精度打印
+
+  - 极其灵活的控制外部信号处理和分析程序（菜单可以由用户在WAVE运行时重新配置）
+
+  - 远程模式：外部程序，例如网页浏览器能控制WAVE 的显示 
+
+  - 提供在线帮助
+
+#### 安装方法
+
++ Github（https://github.com/MIT-LCP/wfdb-python）安装：可以直接下载zip包到本地研读一下源码，了解其数据结构。
++ 直接安装：命令行输入
+
+```
+pip install wfdb
+```
 
 #### 读取.hea文件
 
@@ -94,6 +125,24 @@ display(record.__dict__)
 
 #### 读取record数据
 
+使用**rdrecord**函数，该函数的返回值为一个wfdb中定义的record对象。
+
+```python
+def rdrecord(record_name, sampfrom=0, sampto=None, channels=None,
+             physical=True, pb_dir=None, m2s=True, smooth_frames=True,
+            ignore_skew=False, return_res=64, force_channels=True,
+           channel_names=None, warn_empty=False):
+```
+
+**常用的重要参数**：
+
++ record_name : 储存心电信号的路径;
++ sampfrom : 起始位置；
++ sampto : 终止位置；
++ channels :optional，选择读取某个通道的数据，默认读取全部通道；
+
+> 举例
+
 ```python
 from IPython.display import display
 import wfdb
@@ -102,6 +151,16 @@ display(record.__dict__)
 ```
 
 ![](figure/读取record文件.png)
+
+> **几个经常使用的属性值**
+
++ fs：采样频率；
++ n_sig：信号通道数；
++ sig_len：信号长度；
++ p_signal：模拟信号值，储存形式为ndarray或者是list；
++ d_signal：数字信号值，储存形式为ndarray或者是list。
+
+> 这些属性都能直接进行访问（如：使用**record.fs**可以直接读取到采样频率)。
 
 #### 读取.art文件
 
@@ -112,6 +171,20 @@ display(annotation.__dict__)
 ```
 
 ![](figure/读取atr文件.png)
+
+其中的**symbol**为心拍注释（包括了正常类型N和各种异常类型）
+
+> 常见注释举例
+
+| Symbol |            Description            |
+| :----: | :-------------------------------: |
+|   N    |              Normal               |
+|   L    |   Left bundle branch block beat   |
+|   R    |  Right bundle branch block beat   |
+|   V    | Premature ventricular contraction |
+|   A    |   Atrial premature contraction    |
+|   I    |    Isolated QRS-like artifact     |
+|   B    | Left or right bundle branch block |
 
 ## 5.数据集的合并
 
@@ -141,7 +214,8 @@ for name in name_list:      # 遍历每一个数据文件
 
 ### 5.1 对长度不一的数据处理
 
-由于不同数据库的数据长度不一，这里统一裁剪成**10s长度**的数据。
++ 由于不同数据库的数据长度不一，若要进行数据合并，需要将这些记录裁剪成统一长度，这里统一裁剪成**10s**长度的数据；
++ 在rdrecord函数中，通过设置参数**sampfrom&sampfrom**可以直接读取出相应长度的数据，便于进行后续处理。
 
 ```python
 f=360       # 根据不同的数据库进行更改
@@ -189,7 +263,21 @@ for person in MLII:
 
 ### 5.3 对采样频率的处理
 
-使用**重采样**方法将数据集**统一到360Hz**，这里使用的是**scipy.signal.resample**函数。
+使用**重采样**方法将数据集统一到360Hz，这里使用的是**scipy.signal.resample**函数。
+
+```python
+scipy.signal.resample(x, num, t=None, axis=0, window=None)
+```
+
++ 使用傅里叶方法沿给定轴重新采样 x 到 num 样本;
++ 重新采样的信号起始值与 x 相同，但采样的间距为 len(x) / num （x的间距为x）;
++ 由于使用了傅里叶法，因此假定信号是周期性的。
+
+**常用参数**
+
++ x：array_like，重新采样的数据；
++ num：int，重新采样信号中的样本数量；
++ Window：数组类、可调用、字符串、浮点数或元组，可选指定应用于傅里叶域中信号的窗口。
 
 ```python
 for person in MLII:
