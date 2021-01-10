@@ -1,4 +1,4 @@
-# 基于深度学习的ECG分类(三)——基本模型复现：CNN+GRU
+# 基于深度学习的ECG分类(三)——基本模型的复现与改进：CNN+GRU
 
 ## 1. 概要
 
@@ -171,25 +171,53 @@ print(final_state.shape)
 
 卷积模型由三个步长为1的卷积层组成，在训练过程中，卷积核的权重会被网络不断调整，以获取数据中存在的有意义的空间信息。这里没有采用有效卷积，而是使用了全卷积，这是因为较短的长度段已经被填上了零。此外，为了保留零填充的完整性，在卷积操作过程中不添加偏置，因此，卷积层输出的零填充序列仍将被视为零。我们利用尺寸为2的不重叠步长的最大池化层来使输出的尺寸减半。
 
+卷积部分的代码如下：
+
+```python
+tf.keras.layers.Conv1D(filters=128, kernel_size=20, strides=3, padding='same',activation=tf.nn.relu),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.MaxPool1D(pool_size=2, strides=3),
+        tf.keras.layers.Conv1D(filters=32, kernel_size=7, strides=1, padding='same', activation=tf.nn.relu),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.MaxPool1D(pool_size=2, strides=2),
+        tf.keras.layers.Conv1D(filters=32, kernel_size=10, strides=1, padding='same', activation=tf.nn.relu),
+        # tf.keras.layers.Conv1D(filters=128, kernel_size=5, strides=2, padding='same', activation=tf.nn.relu),
+        tf.keras.layers.MaxPool1D(pool_size=2, strides=2),
+        # tf.keras.layers.Conv1D(filters=512, kernel_size=5, strides=1, padding='same', activation=tf.nn.relu),
+        # tf.keras.layers.Conv1D(filters=128, kernel_size=3, strides=1, padding='same', activation=tf.nn.relu),
+```
+
 #### 3.1.2 循环部分
 
 使用LSTM层从卷积部分输出的特征图中提取时间信息。从卷积和池化过程中提取的特征被分解成连续的成分，并送入循环的LSTM单元进行时间分析。将最后一步LSTM的输出送入全连接层，用于心律失常预测。
 
-![image-20210109074210446](figure/image-20210109074210446.png)
+整体代码如下：
 
-### 3.2 数据描述
+```python
+def CNN_LSTM():
+    return tf.keras.models.Sequential([
+        tf.keras.layers.Conv1D(filters=128, kernel_size=20, strides=3, padding='same',activation=tf.nn.relu),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.MaxPool1D(pool_size=2, strides=3),
+        tf.keras.layers.Conv1D(filters=32, kernel_size=7, strides=1, padding='same', activation=tf.nn.relu),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.MaxPool1D(pool_size=2, strides=2),
+        tf.keras.layers.Conv1D(filters=32, kernel_size=10, strides=1, padding='same', activation=tf.nn.relu),
+        # tf.keras.layers.Conv1D(filters=128, kernel_size=5, strides=2, padding='same', activation=tf.nn.relu),
+        tf.keras.layers.MaxPool1D(pool_size=2, strides=2),
+        # tf.keras.layers.Conv1D(filters=512, kernel_size=5, strides=1, padding='same', activation=tf.nn.relu),
+        # tf.keras.layers.Conv1D(filters=128, kernel_size=3, strides=1, padding='same', activation=tf.nn.relu),
+        tf.keras.layers.LSTM(10),
+        tf.keras.layers.Flatten(),
+        # tf.keras.layers.Dense(units=512, activation=tf.nn.relu),
+        tf.keras.layers.Dropout(rate=0.1),
+        tf.keras.layers.Dense(units=20, activation=tf.nn.relu),
+        tf.keras.layers.Dense(units=10, activation=tf.nn.relu),
+        tf.keras.layers.Dense(units=7, activation=tf.nn.softmax)
+    ])
+```
 
-论文采用的PhysioNet公共数据集，每一条记录的采样频率都是360HZ。经过对数据的预处理之后，将每条数据的长度都同意变成1000，最后对Normal、LBBB、RBBB、APB、PVC等5个类别的心电数据进行分类。
-
-![image-20210109074952413](figure/image-20210109074952413.png)
-
-<img src="figure/image-20210109075017026.png" alt="image-20210109075017026" style="zoom:67%;" />
-
-### 3.3 结果
-
-#### 总体分类性能
-
-![image-20210109075540252](figure/image-20210109075540252.png)
+### 3.3 实验结果
 
 #### 准确率
 
